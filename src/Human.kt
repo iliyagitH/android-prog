@@ -1,12 +1,12 @@
 class Human(
     var fullName: String,
     var age: Int,
-    var currentSpeed: Double
-) {
-    var x: Double = 0.0
-    var y: Double = 0.0
+    override var currentSpeed: Double
+) : Movable {
+    override var x: Double = 0.0
+    override var y: Double = 0.0
 
-    fun move() {
+    override fun move() {
         val direction = Math.random() * 2 * Math.PI
         val stepLength = Math.random() * currentSpeed
         val deltaX = stepLength * kotlin.math.cos(direction)
