@@ -1,4 +1,4 @@
-class Human(
+open class Human(
     var fullName: String,
     var age: Int,
     override var currentSpeed: Double

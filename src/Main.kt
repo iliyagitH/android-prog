@@ -1,33 +1,32 @@
 fun main() {
-    val movables: List<Movable> = listOf(
-        Human("Иванов Иван Иванович", 25, 1.5),
-        Human("Петров Петр Петрович", 30, 2.0),
-        Human("Сидорова Анна Михайловна", 28, 1.8)
+    val humans = listOf(
+        Human("Иванов Иван", 25, 1.5),
+        Human("Петров Пётр", 30, 2.0)
     )
 
-    val simulationTime = 10
+    val driver = Driver("Сидоров Алексей", 35, 3.0, "автомобиль", "AB1234CD")
 
-    println("=== НАЧАЛО СИМУЛЯЦИИ RANDOM WALK ===")
-    println("Время: $simulationTime секунд")
-    println("Участников: ${movables.size}")
-    println("=".repeat(40))
+    val movables: List<Movable> = humans + driver
 
-    for (second in 1..simulationTime) {
-        println("\n⏱️  Секунда $second:")
+    println("=== СИМУЛЯЦИЯ ДВИЖЕНИЯ ===")
 
-        movables.forEach { movable ->
-            movable.move()
+    val threads = movables.map { movable ->
+        Thread {
+            repeat(5) {
+                movable.move()
+                Thread.sleep(500)
+            }
         }
+    }
 
-        Thread.sleep(1000)
+
+    threads.forEach { it.start() }
+
+    threads.forEach { it.join() }
+
+    if (driver is Driver) {
+        driver.honk()
     }
 
     println("\n=== СИМУЛЯЦИЯ ЗАВЕРШЕНА ===")
-
-    println("\nФинальные позиции:")
-    movables.forEach { movable ->
-        if (movable is Human) {
-            println("${movable.fullName}: (${"%.2f".format(movable.x)}, ${"%.2f".format(movable.y)})")
-        }
-    }
 }
