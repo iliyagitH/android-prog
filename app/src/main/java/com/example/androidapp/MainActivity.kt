@@ -30,5 +30,9 @@ class MainActivity : AppCompatActivity() {
             val calcIntent = Intent(this, CalcActivity::class.java)
             startActivity(calcIntent)
         }
+        playerButton.setOnClickListener {
+            val playerIntent = Intent(this, PlayerActivity::class.java)
+            startActivity(playerIntent)
+        }
     }
 }
