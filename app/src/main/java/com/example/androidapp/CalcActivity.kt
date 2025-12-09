@@ -96,7 +96,6 @@ class CalcActivity : AppCompatActivity() {
             if (secondNumber != 0.0) {
                 result = firstNumber / secondNumber
             } else {
-                resultTextView.text = "Ошибка"
                 clearAll()
                 return
             }

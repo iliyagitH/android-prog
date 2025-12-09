@@ -11,6 +11,7 @@ import android.content.Intent
 class MainActivity : AppCompatActivity() {
     lateinit var playerButton : Button
     lateinit var calcButton : Button
+    lateinit var locationButton : Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,6 +26,7 @@ class MainActivity : AppCompatActivity() {
 
         playerButton = findViewById(R.id.PlayerButton)
         calcButton = findViewById(R.id.CalcButton)
+        locationButton = findViewById(R.id.btn_location)
 
         calcButton.setOnClickListener {
             val calcIntent = Intent(this, CalcActivity::class.java)
@@ -33,6 +35,11 @@ class MainActivity : AppCompatActivity() {
         playerButton.setOnClickListener {
             val playerIntent = Intent(this, PlayerActivity::class.java)
             startActivity(playerIntent)
+        }
+
+        locationButton.setOnClickListener {
+            val locationIntent = Intent(this, LocationActivity::class.java)
+            startActivity(locationIntent)
         }
     }
 }

@@ -5,11 +5,14 @@ plugins {
 
 android {
     namespace = "com.example.androidapp"
+
+    // 🛠️ ИСПРАВЛЕНИЕ 1: Устанавливаем compileSdk на 36, как того требуют библиотеки
     compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.androidapp"
         minSdk = 24
+        // 🛠️ ИСПРАВЛЕНИЕ 2: targetSdk также устанавливаем на 36
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -36,12 +39,15 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+
+    // Зависимость для FusedLocationProviderClient
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
