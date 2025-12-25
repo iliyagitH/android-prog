@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFFFFF"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Sockets Activity (ZMQ)"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#4A148C"
+        android:gravity="center"
+        android:layout_marginTop="20dp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/tv_network_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ожидание соединения..."
+        android:textSize="18sp"
+        android:textColor="#333333"
+        android:gravity="center"
+        android:padding="16dp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <Button
+        android:id="@+id/btn_send_zmq"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Отправить Hello"
+        android:backgroundTint="#4A148C"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="12dp" />
+
+    <Button
+        android:id="@+id/btn_back_to_menu"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Назад в меню"
+        android:backgroundTint="#7E57C2"
+        android:textColor="#FFFFFF" />
+
+</LinearLayout>

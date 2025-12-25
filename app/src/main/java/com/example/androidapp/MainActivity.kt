@@ -12,6 +12,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var playerButton : Button
     lateinit var calcButton : Button
     lateinit var locationButton : Button
+    lateinit var socketsButton : Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,6 +28,7 @@ class MainActivity : AppCompatActivity() {
         playerButton = findViewById(R.id.PlayerButton)
         calcButton = findViewById(R.id.CalcButton)
         locationButton = findViewById(R.id.btn_location)
+        socketsButton = findViewById(R.id.btn_sockets)
 
         calcButton.setOnClickListener {
             val calcIntent = Intent(this, CalcActivity::class.java)
@@ -36,10 +38,13 @@ class MainActivity : AppCompatActivity() {
             val playerIntent = Intent(this, PlayerActivity::class.java)
             startActivity(playerIntent)
         }
-
         locationButton.setOnClickListener {
             val locationIntent = Intent(this, LocationActivity::class.java)
             startActivity(locationIntent)
+        }
+        socketsButton.setOnClickListener {
+            val socketsIntent = Intent(this, NetworkActivity::class.java)
+            startActivity(socketsIntent)
         }
     }
 }

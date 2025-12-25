@@ -49,6 +49,11 @@
             android:exported="false"
             android:label="Местоположение"
             android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".NetworkActivity"
+            android:exported="false"
+            android:label="Sockets"
+            android:parentActivityName=".MainActivity" />
 
     </application>
 

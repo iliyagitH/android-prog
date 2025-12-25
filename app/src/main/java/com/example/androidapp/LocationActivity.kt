@@ -9,7 +9,6 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -20,7 +19,6 @@ import java.util.Date
 
 class LocationActivity : AppCompatActivity(), LocationListener {
 
-    val LOG_TAG: String = "LOCATION_ACTIVITY"
     private lateinit var bBackToMain: Button
 
     companion object {
@@ -32,8 +30,6 @@ class LocationActivity : AppCompatActivity(), LocationListener {
     private lateinit var tvLon: TextView
     private lateinit var tvAlt: TextView
     private lateinit var tvTime: TextView
-    private lateinit var tvAppContext: TextView
-    private lateinit var tvActivityContext: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,11 +42,7 @@ class LocationActivity : AppCompatActivity(), LocationListener {
         tvLon = findViewById(R.id.tv_lon)
         tvAlt = findViewById(R.id.tv_alt)
         tvTime = findViewById(R.id.tv_time)
-        tvAppContext = findViewById(R.id.tv_appContext)
-        tvActivityContext = findViewById(R.id.tv_activityContext)
 
-        tvAppContext.text = applicationContext.toString()
-        tvActivityContext.text = this.toString()
     }
 
     override fun onResume() {
@@ -72,6 +64,7 @@ class LocationActivity : AppCompatActivity(), LocationListener {
     private fun updateCurrentLocation() {
         if (checkPermissions()) {
             if (isLocationEnabled()) {
+
                 if (ActivityCompat.checkSelfPermission(
                         this,
                         Manifest.permission.ACCESS_FINE_LOCATION
@@ -84,27 +77,19 @@ class LocationActivity : AppCompatActivity(), LocationListener {
                     return
                 }
 
-                try {
-                    locationManager.requestLocationUpdates(
-                        LocationManager.GPS_PROVIDER,
-                        1000L,
-                        1f,
-                        this
-                    )
-                } catch (ex: Exception) {
-                    Log.e(LOG_TAG, "Ошибка GPS провайдера", ex)
-                }
+                locationManager.requestLocationUpdates(
+                    LocationManager.GPS_PROVIDER,
+                    1000L,
+                    1f,
+                    this
+                )
 
-                try {
-                    locationManager.requestLocationUpdates(
-                        LocationManager.NETWORK_PROVIDER,
-                        1000L,
-                        1f,
-                        this
-                    )
-                } catch (ex: Exception) {
-                    Log.e(LOG_TAG, "Ошибка Network провайдера", ex)
-                }
+                locationManager.requestLocationUpdates(
+                    LocationManager.NETWORK_PROVIDER,
+                    1000L,
+                    1f,
+                    this
+                )
 
                 Toast.makeText(this, "Поиск спутников и сети...", Toast.LENGTH_SHORT).show()
 
@@ -114,7 +99,6 @@ class LocationActivity : AppCompatActivity(), LocationListener {
                 startActivity(intent)
             }
         } else {
-            Log.w(LOG_TAG, "Нет разрешений")
             tvLat.text = "Нет разрешений"
             requestPermissions()
         }
@@ -170,7 +154,7 @@ class LocationActivity : AppCompatActivity(), LocationListener {
         saveToJson(lat, lon, alt, time)
     }
 
-    private fun saveToJson(lat: Double, lon: Double, alt: Double, time: String) {
+    private fun saveToJson(lat: Double, lon: Double, alt: Double, time: String) { // /storage/emulated/0/Android/data/com.example.androidapp/files/location_log.json
         try {
             val jsonString = """
             {
@@ -185,10 +169,8 @@ class LocationActivity : AppCompatActivity(), LocationListener {
 
             file.appendText(jsonString + "\n")
 
-            Log.d(LOG_TAG, "JSON добавлен в лог: ${file.absolutePath}")
-
         } catch (e: Exception) {
-            Log.e(LOG_TAG, "Ошибка записи JSON", e)
+            Toast.makeText(this, "Ошибка записи файла!", Toast.LENGTH_LONG).show()
         }
     }
 
