@@ -1,180 +1,105 @@
 package com.example.androidapp
 
 import android.Manifest
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
 import android.os.Bundle
-import android.provider.Settings
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import java.io.File
-import java.util.Date
+import org.json.JSONObject
 
-class LocationActivity : AppCompatActivity(), LocationListener {
+class LocationActivity : AppCompatActivity() {
 
-    private lateinit var bBackToMain: Button
-
-    companion object {
-        private const val PERMISSION_REQUEST_ACCESS_LOCATION = 100
-    }
-
-    private lateinit var locationManager: LocationManager
     private lateinit var tvLat: TextView
     private lateinit var tvLon: TextView
     private lateinit var tvAlt: TextView
     private lateinit var tvTime: TextView
+    private lateinit var tvStatus: TextView
+    private lateinit var btnStart: Button
+    private lateinit var btnBack: Button
+    private lateinit var etIp: EditText
+
+    var isRunning = false
+
+    val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val jsonStr = intent?.getStringExtra("json") ?: return
+            val root = JSONObject(jsonStr)
+            val loc = root.optJSONObject("location") ?: return
+
+            tvLat.setText("Широта: " + loc.optDouble("Latitude").toString())
+            tvLon.setText("Долгота: " + loc.optDouble("Longitude").toString())
+            tvAlt.setText("Высота: " + loc.optDouble("Altitude").toString())
+            tvTime.setText("Время: " + loc.optString("Current Time"))
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_location)
 
-        bBackToMain = findViewById<Button>(R.id.back_to_main)
-        locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        tvLat = findViewById(R.id.tv_lat) as TextView
+        tvLon = findViewById(R.id.tv_lon) as TextView
+        tvAlt = findViewById(R.id.tv_alt) as TextView
+        tvTime = findViewById(R.id.tv_time) as TextView
+        tvStatus = findViewById(R.id.tv_service_status) as TextView
+        btnStart = findViewById(R.id.btn_start_service) as Button
+        btnBack = findViewById(R.id.back_to_main) as Button
+        etIp = findViewById(R.id.et_server_ip) as EditText
 
-        tvLat = findViewById(R.id.tv_lat)
-        tvLon = findViewById(R.id.tv_lon)
-        tvAlt = findViewById(R.id.tv_alt)
-        tvTime = findViewById(R.id.tv_time)
+        btnBack.setOnClickListener {
+            finish()
+        }
 
+        btnStart.setOnClickListener {
+            if (!isRunning) {
+                val ip = etIp.text.toString().trim()
+                val serviceIntent = Intent(this, LocationService::class.java)
+                serviceIntent.putExtra(LocationService.EXTRA_SERVER_IP, ip)
+                startService(serviceIntent)
+                tvStatus.setText("Статус: Работает")
+                btnStart.setText("Остановить")
+                isRunning = true
+            } else {
+                stopService(Intent(this, LocationService::class.java))
+                tvStatus.setText("Статус: Остановлен")
+                btnStart.setText("Запустить")
+                isRunning = false
+            }
+        }
+
+        checkPermissions()
+    }
+
+    private fun checkPermissions() {
+        val permissions = arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.READ_PHONE_STATE
+        )
+        var needRequest = false
+        for (p in permissions) {
+            if (ActivityCompat.checkSelfPermission(this, p) != PackageManager.PERMISSION_GRANTED) {
+                needRequest = true
+            }
+        }
+        if (needRequest) {
+            ActivityCompat.requestPermissions(this, permissions, 100)
+        }
     }
 
     override fun onResume() {
         super.onResume()
-
-        bBackToMain.setOnClickListener {
-            val backToMain = Intent(this, MainActivity::class.java)
-            startActivity(backToMain)
-        }
-
-        updateCurrentLocation()
+        registerReceiver(receiver, IntentFilter("LocationUpdates"))
     }
 
     override fun onPause() {
         super.onPause()
-        locationManager.removeUpdates(this)
+        unregisterReceiver(receiver)
     }
-
-    private fun updateCurrentLocation() {
-        if (checkPermissions()) {
-            if (isLocationEnabled()) {
-
-                if (ActivityCompat.checkSelfPermission(
-                        this,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                        this,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    requestPermissions()
-                    return
-                }
-
-                locationManager.requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER,
-                    1000L,
-                    1f,
-                    this
-                )
-
-                locationManager.requestLocationUpdates(
-                    LocationManager.NETWORK_PROVIDER,
-                    1000L,
-                    1f,
-                    this
-                )
-
-                Toast.makeText(this, "Поиск спутников и сети...", Toast.LENGTH_SHORT).show()
-
-            } else {
-                Toast.makeText(applicationContext, "Включите геолокацию!", Toast.LENGTH_SHORT).show()
-                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                startActivity(intent)
-            }
-        } else {
-            tvLat.text = "Нет разрешений"
-            requestPermissions()
-        }
-    }
-
-    private fun requestPermissions() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ),
-            PERMISSION_REQUEST_ACCESS_LOCATION
-        )
-    }
-
-    private fun checkPermissions(): Boolean {
-        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == PERMISSION_REQUEST_ACCESS_LOCATION) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                updateCurrentLocation()
-            } else {
-                Toast.makeText(applicationContext, "Отказано в доступе", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    private fun isLocationEnabled(): Boolean {
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-    }
-
-    override fun onLocationChanged(location: Location) {
-        val lat = location.latitude
-        val lon = location.longitude
-        val alt = location.altitude
-        val time = Date(location.time).toString()
-
-        tvLat.text = "Широта: $lat"
-        tvLon.text = "Долгота: $lon"
-        tvAlt.text = "Высота: $alt"
-        tvTime.text = "Время: $time"
-
-        saveToJson(lat, lon, alt, time)
-    }
-
-    private fun saveToJson(lat: Double, lon: Double, alt: Double, time: String) { // /storage/emulated/0/Android/data/com.example.androidapp/files/location_log.json
-        try {
-            val jsonString = """
-            {
-                "latitude": $lat,
-                "longitude": $lon,
-                "altitude": $alt,
-                "time": "$time"
-            }
-        """.trimIndent()
-
-            val file = File(getExternalFilesDir(null), "location_log.json")
-
-            file.appendText(jsonString + "\n")
-
-        } catch (e: Exception) {
-            Toast.makeText(this, "Ошибка записи файла!", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    override fun onProviderEnabled(provider: String) {}
-    override fun onProviderDisabled(provider: String) {}
-    override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
 }
