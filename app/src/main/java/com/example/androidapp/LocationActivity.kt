@@ -20,6 +20,8 @@ class LocationActivity : AppCompatActivity() {
     private lateinit var tvLon: TextView
     private lateinit var tvAlt: TextView
     private lateinit var tvTime: TextView
+    private lateinit var tvAccuracy: TextView
+    private lateinit var tvTelemetry: TextView
     private lateinit var tvStatus: TextView
     private lateinit var btnStart: Button
     private lateinit var btnBack: Button
@@ -37,6 +39,24 @@ class LocationActivity : AppCompatActivity() {
             tvLon.setText("Долгота: " + loc.optDouble("Longitude").toString())
             tvAlt.setText("Высота: " + loc.optDouble("Altitude").toString())
             tvTime.setText("Время: " + loc.optString("Current Time"))
+            tvAccuracy.setText("Точность: " + loc.optDouble("Accuracy").toString())
+
+            val telephony = root.optJSONArray("telephony")
+            if (telephony != null && telephony.length() > 0) {
+                val cell = telephony.optJSONObject(0)
+                if (cell != null) {
+                    val type = cell.optString("type")
+                    if (type == "LTE") {
+                        tvTelemetry.setText("Тип: LTE | PCI: " + cell.optInt("pci") + " | RSRP: " + cell.optInt("rsrp") + " | RSRQ: " + cell.optInt("rsrq"))
+                    } else if (type == "GSM") {
+                        tvTelemetry.setText("Тип: GSM | DBM: " + cell.optInt("dbm"))
+                    } else if (type == "NR") {
+                        tvTelemetry.setText("Тип: NR (5G) | PCI: " + cell.optInt("pci") + " | RSRP: " + cell.optInt("ssRsrp"))
+                    } else {
+                        tvTelemetry.setText("Нет данных сети")
+                    }
+                }
+            }
         }
     }
 
@@ -48,6 +68,8 @@ class LocationActivity : AppCompatActivity() {
         tvLon = findViewById(R.id.tv_lon) as TextView
         tvAlt = findViewById(R.id.tv_alt) as TextView
         tvTime = findViewById(R.id.tv_time) as TextView
+        tvAccuracy = findViewById(R.id.tv_accuracy) as TextView
+        tvTelemetry = findViewById(R.id.tv_telemetry) as TextView
         tvStatus = findViewById(R.id.tv_service_status) as TextView
         btnStart = findViewById(R.id.btn_start_service) as Button
         btnBack = findViewById(R.id.back_to_main) as Button
@@ -95,7 +117,11 @@ class LocationActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        registerReceiver(receiver, IntentFilter("LocationUpdates"))
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(receiver, IntentFilter("LocationUpdates"), RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(receiver, IntentFilter("LocationUpdates"))
+        }
     }
 
     override fun onPause() {
